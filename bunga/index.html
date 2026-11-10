@@ -24,6 +24,30 @@ html,body{height:100%;overflow:hidden;background:#03040a;font-family:"Courier Ne
 #t1.hilang{opacity:0}
 #t2{top:14vh;font-size:clamp(26px,8.5vw,54px);letter-spacing:.12em}
 
+/* ---------- paragraf pesan tambahan ---------- */
+#pesan-cinta {
+  position: fixed;
+  top: 23vh;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: var(--cream);
+  font-size: clamp(11px, 2.7vw, 15px);
+  font-weight: normal;
+  opacity: 0;
+  padding: 0 8vw;
+  line-height: 1.6;
+  letter-spacing: 0.05em;
+  font-family: "Courier New", Courier, monospace;
+  pointer-events: none;
+  transition: opacity 1.2s ease;
+  z-index: 5;
+  text-shadow: 0 0 4px rgba(255,236,150,.5);
+}
+#pesan-cinta.tampil {
+  opacity: 0.88;
+}
+
 /* ---------- tombol Open ---------- */
 #buka{z-index:10;position:fixed;left:50%;top:54%;transform:translateX(-50%) scale(.94);opacity:0;pointer-events:none;
   display:flex;align-items:center;gap:10px;padding:16px 34px;border-radius:999px;cursor:pointer;
@@ -81,6 +105,7 @@ html,body{height:100%;overflow:hidden;background:#03040a;font-family:"Courier Ne
   <span>Open</span>
 </button>
 <div id="t2" class="teks"></div>
+<p id="pesan-cinta">Thank you so much for coming into my life and choosing me to be your partner. Having you by my side makes every single day feel so special and full of meaning. No matter what comes our way, I want you to know that I will always cherish you, and I am so grateful for every little moment we share together.</p>
 
 <svg id="bunga" viewBox="0 0 600 640" preserveAspectRatio="xMidYMax meet">
   <defs>
@@ -102,148 +127,4 @@ const CONFIG = {
   foto:  "assets/foto.jpg",   // taruh foto kamu di folder assets dengan nama ini (atau pakai tombol "Pilih foto")
   musik: "assets/musik.mp3"
 };
-const FOTO_DI_DAUN = { tengah:[2,5], kiri:[3], kanan:[3] };  // urutan daun (dari bawah) yang jadi bingkai foto
-/* ============================================================== */
-
-const $ = s => document.querySelector(s), NS = "http://www.w3.org/2000/svg";
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-const rnd = (a, b) => a + Math.random() * (b - a);
-
-/* bintang */
-for (let i = 0; i < 150; i++) {
-  const b = document.createElement("i"), s = rnd(1, 2.6);
-  b.className = "bintang";
-  b.style.cssText = `left:${rnd(0,100)}%;top:${rnd(0,100)}%;width:${s}px;height:${s}px;--t:${rnd(2,6)}s;--dl:${rnd(0,5)}s`;
-  $("#langit").append(b);
-}
-
-/* teks ketik */
-function siap(el, text) {
-  el.innerHTML = ""; const hs = [];
-  text.split(" ").forEach((k, i) => {
-    if (i) el.append(" ");
-    const w = document.createElement("span"); w.className = "kata";
-    [...k].forEach(c => { const s = document.createElement("span"); s.className = "huruf"; s.textContent = c; w.append(s); hs.push(s); });
-    el.append(w);
-  });
-  return hs;
-}
-async function ketik(el, text, ms) { for (const h of siap(el, text)) { h.classList.add("on"); await sleep(ms); } }
-
-/* ---------- gambar bunga (SVG) ---------- */
-const svg = $("#bunga");
-function el(tag, attrs, parent) {
-  const e = document.createElementNS(NS, tag);
-  for (const k in attrs) e.setAttribute(k, attrs[k]);
-  parent && parent.append(e); return e;
-}
-function bez(p, t) {
-  const u = 1 - t;
-  const x = u*u*u*p[0] + 3*u*u*t*p[2] + 3*u*t*t*p[4] + t*t*t*p[6];
-  const y = u*u*u*p[1] + 3*u*u*t*p[3] + 3*u*t*t*p[5] + t*t*t*p[7];
-  const dx = 3*u*u*(p[2]-p[0]) + 6*u*t*(p[4]-p[2]) + 3*t*t*(p[6]-p[4]);
-  const dy = 3*u*u*(p[3]-p[1]) + 6*u*t*(p[5]-p[3]) + 3*t*t*(p[7]-p[5]);
-  return [x, y, Math.atan2(dy, dx) * 180 / Math.PI];
-}
-const LN = "M0 0C8-16 40-18 60 0C40 18 8 16 0 0Z", LP = "M0 0C10-34 60-38 84 0C60 38 10 34 0 0Z";
-
-function daun(g, x, y, a, s, d, foto) {
-  const o = el("g", { transform: `translate(${x} ${y}) rotate(${a}) scale(${s})` }, g);
-  const l = el("g", { class: "daun", style: `--d:${d}s` }, o);
-  if (foto) {
-    const c = el("g", { "clip-path": "url(#kp)" }, l);
-    el("path", { d: LP, fill: "url(#lg)" }, c);
-    const r = el("g", { transform: `rotate(${-a} 42 0)` }, c);   // foto tetap tegak
-    el("image", { class: "fotoimg", x: -10, y: -52, width: 104, height: 104, preserveAspectRatio: "xMidYMid slice" }, r);
-    el("path", { d: LP, fill: "none", stroke: "#fff8d8", "stroke-width": 2.5 }, l);
-  } else {
-    el("path", { d: LN, fill: "url(#lg)" }, l);
-    el("path", { d: "M3 0H50", stroke: "rgba(110,100,60,.35)", "stroke-width": 1.2, fill: "none" }, l);
-  }
-}
-function batang(g, p, t0, dur, w) {
-  el("path", { d: `M${p[0]} ${p[1]}C${p[2]} ${p[3]} ${p[4]} ${p[5]} ${p[6]} ${p[7]}`, pathLength: 1,
-    class: "batang", style: `--d:${t0}s;--du:${dur}s`, "stroke-width": w }, g);
-}
-function daunBatang(g, p, t0, dur, n, s0, s1, fotoIdx = []) {
-  for (let i = 0; i < n; i++) {
-    const t = .2 + .7 * i / (n - 1), [x, y, ang] = bez(p, t), side = i % 2 ? 1 : -1;
-    const foto = fotoIdx.includes(i);
-    daun(g, x, y, ang + side * (48 + rnd(-8, 8)), foto ? 1.15 : s0 + (s1 - s0) * (1 - t) + rnd(-.08, .08), t0 + dur * t + .25, foto);
-  }
-}
-function kembang(g, x, y, rot, d, s) {
-  const o = el("g", { transform: `translate(${x} ${y}) rotate(${rot}) scale(${s})` }, g);
-  const f = el("g", { class: "mekar", style: `--d:${d}s` }, o);
-  for (let i = 0; i < 5; i++)
-    el("path", { d: "M0 0C-20-10-24-40-9-50C-4-44 4-44 9-50C24-40 20-10 0 0Z", fill: "url(#pg)", transform: `rotate(${i*72})` }, f);
-  el("ellipse", { rx: 9, ry: 5, cy: -6, fill: "#ffd23c" }, f);
-}
-const goyang = (sa, sp, sd, ox = 300) => el("g", { class: "goyang", style: `--sa:${sa}deg;--sp:${sp}s;--sd:${sd}s;--ox:${ox}px` }, svg);
-
-/* rumput hijau (di belakang) */
-for (let i = 0; i < 26; i++) {
-  const bx = i < 13 ? rnd(10, 215) : rnd(385, 590), h = rnd(90, 290), lean = rnd(-50, 50);
-  const g = el("g", { class: "goyang", style: `--sa:${rnd(2,5)}deg;--sp:${rnd(3,5)}s;--sd:${rnd(0,3)}s;--ox:${bx}px` }, svg);
-  el("path", { class: "rumput", style: `--ox:${bx}px;--d:${rnd(1.5,3.5)}s`, fill: "url(#rg)",
-    d: `M${bx-7} 612Q${bx-4+lean/2} ${612-h/2} ${bx+lean} ${612-h}Q${bx+8+lean/2} ${612-h/2} ${bx+7} 612Z` }, g);
-}
-
-/* semak pakis */
-[[300,610,250,592,180,560,115,505], [300,610,350,592,430,572,490,520]].forEach((p, k) => {
-  const g = goyang(3.2, 3.8 + k * .6, k * .5);
-  batang(g, p, 1.6, 2, 3);
-  daunBatang(g, p, 1.6, 2, 10, .6, .85);
-});
-
-/* tiga tangkai bunga */
-const tangkai = [
-  { p:[300,610,296,480,288,330,262,175], w:6, t0:.2, sa:2.2, sp:4.6, f:FOTO_DI_DAUN.tengah, n:9 },
-  { p:[300,610,280,520,222,400,168,270], w:5, t0:.7, sa:3.0, sp:4.0, f:FOTO_DI_DAUN.kiri,   n:7 },
-  { p:[300,610,316,500,332,380,352,250], w:5, t0:1.1, sa:2.8, sp:4.3, f:FOTO_DI_DAUN.kanan, n:7 }
-];
-tangkai.forEach((k, i) => {
-  const g = goyang(k.sa, k.sp, i * .4);
-  batang(g, k.p, k.t0, 2.6, k.w);
-  daunBatang(g, k.p, k.t0, 2.6, k.n, .7, 1, k.f);
-  kembang(g, k.p[6], k.p[7], bez(k.p, 1)[2] + 90, k.t0 + 2.7, 1.3 - i * .08);
-});
-
-/* kunang-kunang */
-for (let i = 0; i < 22; i++)
-  el("circle", { class: "kunang", cx: rnd(90, 520), cy: rnd(60, 420), r: rnd(1.6, 3.2),
-    style: `--t:${rnd(3,6)}s;--d:${rnd(4,8)}s;--mx:${rnd(-18,18)}px` }, svg);
-
-/* ---------- foto ---------- */
-function pasangFoto(src) {
-  const t = new Image();
-  t.onload = () => { svg.querySelectorAll(".fotoimg").forEach(im => im.setAttribute("href", src)); svg.classList.add("ada-foto"); };
-  t.src = src;
-}
-pasangFoto(CONFIG.foto);
-$("#inputfoto").onchange = e => {
-  const f = e.target.files[0]; if (!f) return;
-  const r = new FileReader(); r.onload = () => pasangFoto(r.result); r.readAsDataURL(f);
-};
-
-/* ---------- alur ---------- */
-const bgm = $("#bgm"); bgm.src = CONFIG.musik;
-(async () => {
-  setTimeout(() => $("#t1").classList.add("rapat"), 60);
-  await ketik($("#t1"), CONFIG.teks1, 95);
-  await sleep(300);
-  $("#buka").classList.add("tampil");
-})();
-
-$("#buka").onclick = async () => {
-  $("#buka").classList.add("klik");
-  $("#t1").classList.add("hilang");
-  bgm.currentTime = 0; bgm.play().catch(() => {});
-  await sleep(900);
-  svg.classList.add("go");
-  await sleep(1800);
-  ketik($("#t2"), CONFIG.teks2, 170);
-};
-</script>
-</body>
-</html>
+const FOTO_DI_DAUN = { tengah:[2,5], kiri:[3], kanan:[3] };  // urutan daun (dari bawah) yang jadi bing
